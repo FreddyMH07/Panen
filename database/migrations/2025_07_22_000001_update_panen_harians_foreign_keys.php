@@ -20,17 +20,23 @@ return new class extends Migration
             $table->foreign('kebun_id')->references('id')->on('kebuns')->onDelete('cascade');
             $table->foreign('divisi_id')->references('id')->on('divisis')->onDelete('cascade');
 
-            // Update the existing rows to set the foreign key values
+            // Update the existing rows to set the foreign key values using SQLite syntax
             DB::statement('
-                UPDATE panen_harians ph
-                INNER JOIN kebuns k ON k.nama_kebun = ph.kebun
-                SET ph.kebun_id = k.id
+                UPDATE panen_harians
+                SET kebun_id = (
+                    SELECT id FROM kebuns
+                    WHERE nama_kebun = panen_harians.kebun
+                    LIMIT 1
+                )
             ');
 
             DB::statement('
-                UPDATE panen_harians ph
-                INNER JOIN divisis d ON d.nama_divisi = ph.divisi
-                SET ph.divisi_id = d.id
+                UPDATE panen_harians
+                SET divisi_id = (
+                    SELECT id FROM divisis
+                    WHERE nama_divisi = panen_harians.divisi
+                    LIMIT 1
+                )
             ');
 
             // Make the columns required after data migration
