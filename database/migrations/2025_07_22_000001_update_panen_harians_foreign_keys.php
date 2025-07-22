@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -45,6 +46,20 @@ return new class extends Migration
             $table->unsignedBigInteger('kebun_id')->nullable(false)->change();
             $table->unsignedBigInteger('divisi_id')->nullable(false)->change();
         });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('panen_harians', function (Blueprint $table) {
+            $table->dropForeign(['kebun_id']);
+            $table->dropForeign(['divisi_id']);
+            $table->dropColumn(['kebun_id', 'divisi_id']);
+        });
+    }
+};
         });
     }
 
