@@ -12,55 +12,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First add the new columns without constraints
+        // 1. Tambah kolom baru
         Schema::table('panen_harians', function (Blueprint $table) {
             $table->unsignedBigInteger('kebun_id')->nullable()->after('kebun');
             $table->unsignedBigInteger('divisi_id')->nullable()->after('divisi');
         });
 
-        // Update the existing rows to set the foreign key values using SQLite syntax
-        DB::statement("
-            UPDATE panen_harians
-            SET kebun_id = (
-                SELECT id FROM kebuns
-                WHERE nama_kebun = panen_harians.kebun
-                LIMIT 1
-            )
-        ");
+        // 2. Update isi kolom baru (loop PHP agar compatible semua DBMS)
+        $kebuns = DB::table('kebuns')->pluck('id', 'nama_kebun');
+        $divisis = DB::table('divisis')->pluck('id', 'nama_divisi');
+        foreach(DB::table('panen_harians')->get() as $ph) {
+            $kebun_id = $kebuns[$ph->kebun] ?? null;
+            $divisi_id = $divisis[$ph->divisi] ?? null;
+            DB::table('panen_harians')->where('id', $ph->id)->update([
+                'kebun_id' => $kebun_id,
+                'divisi_id' => $divisi_id,
+            ]);
+        }
 
-        DB::statement("
-            UPDATE panen_harians
-            SET divisi_id = (
-                SELECT id FROM divisis
-                WHERE nama_divisi = panen_harians.divisi
-                LIMIT 1
-            )
-        ");
-
-        // Add foreign key constraints after data is updated
+        // 3. (Optional) Tambahkan foreign key constraint jika DBMS support
         Schema::table('panen_harians', function (Blueprint $table) {
+            // Hati-hati: Foreign key hanya work di SQLite jika support dan enabled
             $table->foreign('kebun_id')->references('id')->on('kebuns')->onDelete('cascade');
             $table->foreign('divisi_id')->references('id')->on('divisis')->onDelete('cascade');
-            
-            // Make the columns required now that data is migrated
-            $table->unsignedBigInteger('kebun_id')->nullable(false)->change();
-            $table->unsignedBigInteger('divisi_id')->nullable(false)->change();
         });
-    }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('panen_harians', function (Blueprint $table) {
-            $table->dropForeign(['kebun_id']);
-            $table->dropForeign(['divisi_id']);
-            $table->dropColumn(['kebun_id', 'divisi_id']);
-        });
-    }
-};
-        });
+        // 4. (Optional) Jika ingin mengubah jadi required (TIDAK didukung di SQLite)
+        // Kalau perlu, tambah validasi di model/controller, bukan di migration
     }
 
     /**
