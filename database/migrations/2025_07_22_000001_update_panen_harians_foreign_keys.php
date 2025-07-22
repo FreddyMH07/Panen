@@ -19,23 +19,23 @@ return new class extends Migration
         });
 
         // Update the existing rows to set the foreign key values using SQLite syntax
-        DB::statement('
+        DB::statement("
             UPDATE panen_harians
             SET kebun_id = (
                 SELECT id FROM kebuns
                 WHERE nama_kebun = panen_harians.kebun
                 LIMIT 1
             )
-        ');
+        ");
 
-        DB::statement('
+        DB::statement("
             UPDATE panen_harians
             SET divisi_id = (
                 SELECT id FROM divisis
                 WHERE nama_divisi = panen_harians.divisi
                 LIMIT 1
             )
-        ');
+        ");
 
         // Add foreign key constraints after data is updated
         Schema::table('panen_harians', function (Blueprint $table) {
