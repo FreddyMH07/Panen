@@ -26,11 +26,11 @@ class DashboardController extends Controller
         $query = PanenHarian::whereDate('tanggal_panen', $today);
 
         if ($request->filled('kebun')) {
-            $query->where('kebun_id', $request->kebun);
+            $query->where('kebun', $request->kebun);
         }
 
         if ($request->filled('divisi')) {
-            $query->where('divisi_id', $request->divisi);
+            $query->where('divisi', $request->divisi);
         }
 
         // Summary data hari ini
@@ -52,11 +52,11 @@ class DashboardController extends Controller
             ->where('bulan', $currentMonthName);
 
         if ($request->filled('kebun')) {
-            $monthlyQuery->where('kebun_id', $request->kebun);
+            $monthlyQuery->where('kebun', $request->kebun);
         }
 
         if ($request->filled('divisi')) {
-            $monthlyQuery->where('divisi_id', $request->divisi);
+            $monthlyQuery->where('divisi', $request->divisi);
         }
 
         // Summary data bulan ini
