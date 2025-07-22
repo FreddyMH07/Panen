@@ -21,11 +21,15 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Copy .env.example to .env
-        run: cp .env.example .env
+      - name: Copy .env.railway to .env
+        run: cp .env.railway .env
+
 
       - name: Generate app key
         run: php artisan key:generate
+
+      - name: Set storage permissions
+        run: chmod -R 777 storage bootstrap/cache
 
       - name: Run migrations and seeders
         run: php artisan migrate:fresh --seed
