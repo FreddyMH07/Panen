@@ -1,3 +1,26 @@
+name: Railway Deploy & Migrate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, sqlite3, zip
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
       - name: Clear Laravel config and cache
         run: |
           php artisan config:clear
@@ -5,14 +28,15 @@
           php artisan route:clear
           php artisan view:clear
           composer dump-autoload -o
-name: Railway Deploy & Migrate
 
-name: Railway Deploy & Migrate
+      - name: Copy .env.railway to .env
+        run: cp .env.railway .env
 
-      # Railway akan otomatis deploy dari repo jika sudah terhubung
-      # Jika ingin Railway CLI, tambahkan langkah berikut:
-      # - name: Install Railway CLI
-      #   run: npm install -g railway
+      - name: Generate app key
+        run: php artisan key:generate
 
-      # - name: Deploy to Railway
-      #   run: railway up
+      - name: Set storage permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Run migrations and seeders
+        run: php artisan migrate:fresh --seed
