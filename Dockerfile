@@ -12,8 +12,12 @@ WORKDIR /var/www
 # Copy composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+
 # Copy existing application directory contents
 COPY . /var/www
+
+# Pastikan file database.sqlite ada di /app/database/database.sqlite (Railway working dir)
+RUN mkdir -p /app/database && cp /var/www/database/database.sqlite /app/database/database.sqlite || true
 
 # Install composer dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
